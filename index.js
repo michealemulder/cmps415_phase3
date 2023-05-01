@@ -36,6 +36,54 @@ app.get('/menu', function(req, res) {
     });
 });
 
+// Endpoint to get a single ticket as an XML document
+app.get('/rest/xml/ticket/:id', (req, res) => {
+  const ticketId = req.params.id;
+  request(`http://localhost:8000/rest/ticket/${ticketId}`, (err, response, body) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      const json = JSON.parse(body);
+      const xml = builder.buildObject(json);
+      res.type('xml').send(xml);
+    }
+  });
+});
+
+// Endpoint to add a single ticket as an XML document
+app.put('/rest/xml/ticket/:id', (req, res) => {
+  const ticketId = req.params.id;
+  let xml = '';
+  req.on('data', (chunk) => {
+    xml += chunk.toString();
+  });
+  req.on('end', () => {
+    parser.parseString(xml, (err, json) => {
+      if (err) {
+        res.status(400).send(err);
+      } else {
+        const options = {
+          uri: `http://localhost:8000/rest/ticket/${ticketId}`,
+          method: 'PUT',
+          json: json
+        };
+        request(options, (err, response, body) => {
+          if (err) {
+            res.status(500).send(err);
+          } else {
+            res.send(body);
+          }
+        });
+      }
+    });
+  });
+});
+
+app.listen(port, () => {
+  console.log(`Web service listening at http://localhost:${port}`);
+});
+
+
 // GET All tickets
 
 app.get("/rest/list/", function(req, res){
@@ -69,6 +117,7 @@ app.get("/rest/list/", function(req, res){
     }
     run().catch(console.dir);
 });
+
 
 // GET ticket by id
 
@@ -213,6 +262,8 @@ app.post("/rest/ticket/postTicket", function(req, res) {
     }
     run().catch(console.dir);
 });
+
+
 
 // A PUT request
 

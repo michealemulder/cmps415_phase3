@@ -8,6 +8,12 @@ const app = express();
 const port = 3000;
 var fs = require("fs");
 
+//xml
+const request = require('request');
+const xml2js = require('xml2js');
+const parser = new xml2js.Parser();
+const builder = new xml2js.Builder();
+
 app.listen(port);
 console.log('Server started at http://localhost:' + port);
 
